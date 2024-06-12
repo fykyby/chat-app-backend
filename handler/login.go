@@ -44,17 +44,33 @@ func postLogIn(w http.ResponseWriter, r *http.Request) {
 		Name:     "jwt",
 		Value:    tokenString,
 		Secure:   true,
+		HttpOnly: true,
 		MaxAge:   2592000,
 		SameSite: http.SameSiteNoneMode,
-		Path:     "/",
-		HttpOnly: true,
 	})
 	w.Header().Set("jwt", tokenString)
 
-	sendResponse(w, http.StatusOK, MESSAGE_LOGIN_SUCCESS, map[string]interface{}{
+	userMap := map[string]interface{}{
 		"id":     user.ID,
 		"name":   user.Name,
 		"email":  user.Email,
 		"avatar": user.Avatar,
+	}
+
+	userJson, err := json.Marshal(userMap)
+	if err != nil {
+		sendResponse(w, http.StatusInternalServerError, MESSAGE_ERROR_GENERIC, nil)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "user",
+		Value:    string(userJson),
+		Secure:   true,
+		HttpOnly: false,
+		MaxAge:   2592000,
+		SameSite: http.SameSiteNoneMode,
 	})
+
+	sendResponse(w, http.StatusOK, MESSAGE_LOGIN_SUCCESS, userMap)
 }
