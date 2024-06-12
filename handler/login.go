@@ -35,7 +35,11 @@ func postLogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, tokenString, _ := tokenAuth.Encode(map[string]interface{}{"id": user.ID, "email": user.Email})
+	_, tokenString, _ := tokenAuth.Encode(map[string]interface{}{
+		"id":    user.ID,
+		"name":  user.Name,
+		"email": user.Email,
+	})
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
 		Value:    tokenString,
@@ -48,7 +52,9 @@ func postLogIn(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("jwt", tokenString)
 
 	sendResponse(w, http.StatusOK, MESSAGE_LOGIN_SUCCESS, map[string]interface{}{
-		"id":    user.ID,
-		"email": user.Email,
+		"id":     user.ID,
+		"name":   user.Name,
+		"email":  user.Email,
+		"avatar": user.Avatar,
 	})
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/fykyby/chat-app-backend/auth"
 	"github.com/fykyby/chat-app-backend/database"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const MESSAGE_REGISTER_PASSWORDS_DONT_MATCH = "Passwords do not match"
@@ -15,6 +16,7 @@ const MESSAGE_REGISTER_SUCCESS = "Registration successful"
 
 type postRegisterRequest struct {
 	Email           string `json:"email"`
+	Name            string `json:"name"`
 	Password        string `json:"password"`
 	PasswordConfirm string `json:"password_confirm"`
 }
@@ -22,7 +24,7 @@ type postRegisterRequest struct {
 func postRegister(w http.ResponseWriter, r *http.Request) {
 	var req postRegisterRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil || req.Email == "" || req.Password == "" {
+	if err != nil || req.Email == "" || req.Name == "" || req.Password == "" {
 		sendResponse(w, http.StatusBadRequest, MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
@@ -41,7 +43,9 @@ func postRegister(w http.ResponseWriter, r *http.Request) {
 
 	user, err := db.CreateUser(r.Context(), database.CreateUserParams{
 		Email:    req.Email,
+		Name:     req.Name,
 		Password: passwordHash,
+		Avatar:   pgtype.Text{},
 	})
 	if err != nil {
 		log.Println(err)
@@ -50,7 +54,9 @@ func postRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sendResponse(w, http.StatusOK, MESSAGE_REGISTER_SUCCESS, map[string]interface{}{
-		"id":    user.ID,
-		"email": user.Email,
+		"id":     user.ID,
+		"name":   user.Name,
+		"email":  user.Email,
+		"avatar": user.Avatar,
 	})
 }
