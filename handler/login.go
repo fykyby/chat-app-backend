@@ -2,9 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/fykyby/chat-app-backend/auth"
 )
@@ -72,7 +72,7 @@ func postLogIn(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "user",
-		Value:    fmt.Sprintf(string(userJson)),
+		Value:    url.QueryEscape(string(userJson)),
 		Secure:   true,
 		HttpOnly: false,
 		MaxAge:   2592000,
