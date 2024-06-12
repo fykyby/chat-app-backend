@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/fykyby/go-web-template/auth"
+	"github.com/fykyby/chat-app-backend/auth"
 )
 
 const MESSAGE_LOGIN_WRONG_CREDENTIALS = "Wrong email or password"

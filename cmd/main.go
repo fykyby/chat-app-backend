@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/fykyby/go-web-template/database"
-	"github.com/fykyby/go-web-template/handler"
+	"github.com/fykyby/chat-app-backend/database"
+	"github.com/fykyby/chat-app-backend/handler"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"

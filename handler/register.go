@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/fykyby/go-web-template/auth"
-	"github.com/fykyby/go-web-template/database"
+	"github.com/fykyby/chat-app-backend/auth"
+	"github.com/fykyby/chat-app-backend/database"
 )
 
 const MESSAGE_REGISTER_PASSWORDS_DONT_MATCH = "Passwords do not match"

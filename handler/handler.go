@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/fykyby/go-web-template/database"
+	"github.com/fykyby/chat-app-backend/database"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 )

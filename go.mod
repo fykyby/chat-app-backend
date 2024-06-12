@@ -1,4 +1,4 @@
-module github.com/fykyby/go-web-template
+module github.com/fykyby/chat-app-backend
 
 go 1.22.3
 
