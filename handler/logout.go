@@ -15,5 +15,12 @@ func postLogOut(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "user",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		Path:     "/",
+		HttpOnly: false,
+	})
 	sendResponse(w, http.StatusOK, MESSAGE_LOGOUT_SUCCESS, nil)
 }

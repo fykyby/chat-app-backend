@@ -25,11 +25,13 @@ func postRegister(w http.ResponseWriter, r *http.Request) {
 	var req postRegisterRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil || req.Email == "" || req.Name == "" || req.Password == "" {
+		log.Println("Error decoding request")
 		sendResponse(w, http.StatusBadRequest, MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
 
 	if req.Password != req.PasswordConfirm {
+		log.Println("Passwords do not match")
 		sendResponse(w, http.StatusBadRequest, MESSAGE_REGISTER_PASSWORDS_DONT_MATCH, nil)
 		return
 	}
