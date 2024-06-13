@@ -22,5 +22,5 @@ func postLogOut(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: false,
 	})
-	sendResponse(w, http.StatusOK, MESSAGE_LOGOUT_SUCCESS, nil)
+	SendResponse(w, http.StatusOK, MESSAGE_LOGOUT_SUCCESS, nil)
 }

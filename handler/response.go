@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func sendResponse(w http.ResponseWriter, statusCode int, message string, data interface{}) {
+func SendResponse(w http.ResponseWriter, statusCode int, message string, data interface{}) {
 	ok := statusCode >= 200 && statusCode < 300
 
 	w.Header().Set("Content-Type", "application/json")

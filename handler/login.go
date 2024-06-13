@@ -22,21 +22,21 @@ func postLogIn(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil || req.Email == "" || req.Password == "" {
 		log.Println("Error decoding request: ", err)
-		sendResponse(w, http.StatusBadRequest, MESSAGE_ERROR_GENERIC, nil)
+		SendResponse(w, http.StatusBadRequest, MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
 
 	user, err := db.GetUserByEmail(r.Context(), req.Email)
 	if err != nil {
 		log.Println(err)
-		sendResponse(w, http.StatusUnauthorized, MESSAGE_LOGIN_WRONG_CREDENTIALS, nil)
+		SendResponse(w, http.StatusUnauthorized, MESSAGE_LOGIN_WRONG_CREDENTIALS, nil)
 		return
 	}
 
 	passwordsMatch := auth.CheckPasswordHash(req.Password, user.Password)
 	if !passwordsMatch {
 		log.Println("Wrong password")
-		sendResponse(w, http.StatusUnauthorized, MESSAGE_LOGIN_WRONG_CREDENTIALS, nil)
+		SendResponse(w, http.StatusUnauthorized, MESSAGE_LOGIN_WRONG_CREDENTIALS, nil)
 		return
 	}
 
@@ -66,7 +66,7 @@ func postLogIn(w http.ResponseWriter, r *http.Request) {
 	userJson, err := json.Marshal(userMap)
 	if err != nil {
 		log.Println(err)
-		sendResponse(w, http.StatusInternalServerError, MESSAGE_ERROR_GENERIC, nil)
+		SendResponse(w, http.StatusInternalServerError, MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
 
@@ -80,5 +80,5 @@ func postLogIn(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 	})
 
-	sendResponse(w, http.StatusOK, MESSAGE_LOGIN_SUCCESS, userMap)
+	SendResponse(w, http.StatusOK, MESSAGE_LOGIN_SUCCESS, userMap)
 }

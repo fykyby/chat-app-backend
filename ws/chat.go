@@ -6,12 +6,17 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/fykyby/chat-app-backend/auth"
+	"github.com/fykyby/chat-app-backend/handler"
+	"github.com/fykyby/chat-app-backend/model"
 	"github.com/go-chi/chi/v5"
+
+	// "github.com/go-chi/jwtauth/v5"
 	"github.com/gorilla/websocket"
 )
 
 type incomingMessage struct {
-	UserID  int    `json:"userID"`
+	UserID  int32  `json:"userID"`
 	Content string `json:"content"`
 }
 
@@ -20,9 +25,16 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-var rooms = make(map[int]*room)
+var rooms = make(map[int32]*room)
 
 func getChatWs(w http.ResponseWriter, r *http.Request) {
+	claimedUser, err := auth.GetClaimedUser(r.Context())
+	if err != nil {
+		handler.SendResponse(w, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+	// TODO: Check if user is in the chat
+
 	upgrader.CheckOrigin = func(r *http.Request) bool {
 		return r.Header.Get("Origin") == os.Getenv("CLIENT_URL")
 	}
@@ -33,11 +45,12 @@ func getChatWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roomID, err := strconv.Atoi(chi.URLParam(r, "id"))
+	roomID_, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		log.Println(err)
 		return
 	}
+	roomID := int32(roomID_)
 
 	myRoom, ok := rooms[roomID]
 	if !ok {
@@ -47,9 +60,10 @@ func getChatWs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &client{
+		id:   claimedUser.ID,
 		conn: conn,
 		room: myRoom,
-		send: make(chan incomingMessage),
+		send: make(chan model.Message),
 	}
 
 	myRoom.register <- client

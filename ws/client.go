@@ -1,15 +1,19 @@
 package ws
 
 import (
+	"context"
 	"log"
 
+	"github.com/fykyby/chat-app-backend/database"
+	"github.com/fykyby/chat-app-backend/model"
 	"github.com/gorilla/websocket"
 )
 
 type client struct {
+	id   int32
 	conn *websocket.Conn
 	room *room
-	send chan incomingMessage
+	send chan model.Message
 }
 
 func (c *client) readPump() {
@@ -27,9 +31,35 @@ func (c *client) readPump() {
 		}
 
 		log.Println(msg)
-		// TODO: DO THINGS WITH INCOMING MESSAGE
 
-		c.room.broadcast <- &msg
+		outgoingMsg, err := db.CreateMessage(context.Background(), database.CreateMessageParams{
+			ChatID:  c.room.id,
+			UserID:  msg.UserID,
+			Content: msg.Content,
+		})
+		if err != nil {
+			log.Println(err)
+			break
+		}
+
+		publicUser, err := db.GetPublicUser(context.Background(), msg.UserID)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+
+		message := model.Message{
+			ID:        outgoingMsg.ID,
+			Content:   outgoingMsg.Content,
+			CreatedAt: outgoingMsg.CreatedAt.Time.String(),
+			User: model.PublicUser{
+				ID:     publicUser.ID,
+				Name:   publicUser.Name,
+				Avatar: publicUser.Avatar.String,
+			},
+		}
+
+		c.room.broadcast <- &message
 	}
 }
 

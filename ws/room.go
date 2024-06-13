@@ -2,21 +2,23 @@ package ws
 
 import (
 	"log"
+
+	"github.com/fykyby/chat-app-backend/model"
 )
 
 type room struct {
-	id         int
+	id         int32
 	clients    map[*client]bool
-	broadcast  chan *incomingMessage
+	broadcast  chan *model.Message
 	register   chan *client
 	unregister chan *client
 }
 
-func newRoom(id int) *room {
+func newRoom(id int32) *room {
 	return &room{
 		id:         id,
 		clients:    make(map[*client]bool),
-		broadcast:  make(chan *incomingMessage),
+		broadcast:  make(chan *model.Message),
 		register:   make(chan *client),
 		unregister: make(chan *client),
 	}

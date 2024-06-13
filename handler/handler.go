@@ -37,10 +37,10 @@ func (h *ApiHandler) Handler(r chi.Router) {
 		if err != nil {
 			log.Println(err)
 			// http.Error(w, MESSAGE_ERROR_GENERIC, http.StatusInternalServerError)
-			sendResponse(w, http.StatusInternalServerError, MESSAGE_ERROR_GENERIC, nil)
+			SendResponse(w, http.StatusInternalServerError, MESSAGE_ERROR_GENERIC, nil)
 			return
 		}
 
-		sendResponse(w, http.StatusOK, "Success", result)
+		SendResponse(w, http.StatusOK, "Success", result)
 	})
 }

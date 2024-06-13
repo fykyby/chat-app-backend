@@ -26,20 +26,20 @@ func postRegister(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil || req.Email == "" || req.Name == "" || req.Password == "" {
 		log.Println("Error decoding request")
-		sendResponse(w, http.StatusBadRequest, MESSAGE_ERROR_GENERIC, nil)
+		SendResponse(w, http.StatusBadRequest, MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
 
 	if req.Password != req.PasswordConfirm {
 		log.Println("Passwords do not match")
-		sendResponse(w, http.StatusBadRequest, MESSAGE_REGISTER_PASSWORDS_DONT_MATCH, nil)
+		SendResponse(w, http.StatusBadRequest, MESSAGE_REGISTER_PASSWORDS_DONT_MATCH, nil)
 		return
 	}
 
 	passwordHash, err := auth.HashPassword(req.Password)
 	if err != nil {
 		log.Println(err)
-		sendResponse(w, http.StatusInternalServerError, MESSAGE_ERROR_GENERIC, nil)
+		SendResponse(w, http.StatusInternalServerError, MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
 
@@ -51,11 +51,11 @@ func postRegister(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Println(err)
-		sendResponse(w, http.StatusConflict, MESSAGE_REGISTER_USER_ALREADY_EXISTS, nil)
+		SendResponse(w, http.StatusConflict, MESSAGE_REGISTER_USER_ALREADY_EXISTS, nil)
 		return
 	}
 
-	sendResponse(w, http.StatusOK, MESSAGE_REGISTER_SUCCESS, map[string]interface{}{
+	SendResponse(w, http.StatusOK, MESSAGE_REGISTER_SUCCESS, map[string]interface{}{
 		"id":     user.ID,
 		"name":   user.Name,
 		"email":  user.Email,
