@@ -4,14 +4,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
 )
 
-type message struct {
+type incomingMessage struct {
 	UserID  int    `json:"userID"`
-	Type_   string `json:"type"`
 	Content string `json:"content"`
 }
 
@@ -20,7 +20,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-var rooms = make(map[string]*room)
+var rooms = make(map[int]*room)
 
 func getChatWs(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool {
@@ -33,7 +33,12 @@ func getChatWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roomID := chi.URLParam(r, "id")
+	roomID, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	myRoom, ok := rooms[roomID]
 	if !ok {
 		myRoom = newRoom(roomID)
@@ -44,7 +49,7 @@ func getChatWs(w http.ResponseWriter, r *http.Request) {
 	client := &client{
 		conn: conn,
 		room: myRoom,
-		send: make(chan message),
+		send: make(chan incomingMessage),
 	}
 
 	myRoom.register <- client

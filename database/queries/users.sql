@@ -11,3 +11,6 @@ RETURNING id, name, email, avatar;
 
 -- name: GetUserByEmail :one
 SELECT * FROM users WHERE email = $1;
+
+-- name: GetPublicUserById :one
+SELECT id, name, avatar FROM users WHERE id = $1;

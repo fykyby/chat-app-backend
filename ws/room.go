@@ -5,18 +5,18 @@ import (
 )
 
 type room struct {
-	id         string
+	id         int
 	clients    map[*client]bool
-	broadcast  chan *message
+	broadcast  chan *incomingMessage
 	register   chan *client
 	unregister chan *client
 }
 
-func newRoom(id string) *room {
+func newRoom(id int) *room {
 	return &room{
 		id:         id,
 		clients:    make(map[*client]bool),
-		broadcast:  make(chan *message),
+		broadcast:  make(chan *incomingMessage),
 		register:   make(chan *client),
 		unregister: make(chan *client),
 	}
@@ -27,24 +27,22 @@ func (r *room) run() {
 	for {
 		select {
 		case client := <-r.register:
-			log.Println("Client Connected to room " + r.id)
+			log.Println("Client Connected to room ", r.id)
 
 			r.clients[client] = true
 		case client := <-r.unregister:
-			log.Println("Client Disconnected")
+			log.Println("Client Disconnected from room ", r.id)
 			if _, ok := r.clients[client]; ok {
 				delete(r.clients, client)
 				close(client.send)
 			}
 
 			if !r.hasClients() {
-				log.Println("No clients in room, closing room")
+				log.Println("No clients left, closing room ", r.id)
 				r.close()
 				return
 			}
 		case msg := <-r.broadcast:
-			log.Println("Broadcasting Message")
-
 			for client := range r.clients {
 				client.send <- *msg
 			}

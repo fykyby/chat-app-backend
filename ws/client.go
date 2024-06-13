@@ -9,7 +9,7 @@ import (
 type client struct {
 	conn *websocket.Conn
 	room *room
-	send chan message
+	send chan incomingMessage
 }
 
 func (c *client) readPump() {
@@ -19,7 +19,7 @@ func (c *client) readPump() {
 	}()
 
 	for {
-		msg := message{}
+		msg := incomingMessage{}
 		err := c.conn.ReadJSON(&msg)
 		if err != nil {
 			log.Println(err)
