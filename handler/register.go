@@ -18,7 +18,7 @@ type postRegisterRequest struct {
 	Email           string `json:"email"`
 	Name            string `json:"name"`
 	Password        string `json:"password"`
-	PasswordConfirm string `json:"password_confirm"`
+	PasswordConfirm string `json:"passwordConfirm"`
 }
 
 func postRegister(w http.ResponseWriter, r *http.Request) {

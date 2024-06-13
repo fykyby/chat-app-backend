@@ -1,4 +1,4 @@
-package handler
+package ws
 
 import (
 	"github.com/fykyby/chat-app-backend/database"
@@ -8,7 +8,7 @@ import (
 
 const MESSAGE_ERROR_GENERIC = "An unknown error has occurred"
 
-type ApiHandler struct {
+type WebSocketHandler struct {
 	DB        *database.Queries
 	TokenAuth *jwtauth.JWTAuth
 }
@@ -16,13 +16,9 @@ type ApiHandler struct {
 var db *database.Queries
 var tokenAuth *jwtauth.JWTAuth
 
-func (h *ApiHandler) Handler(r chi.Router) {
+func (h *WebSocketHandler) Handler(r chi.Router) {
 	db = h.DB
 	tokenAuth = h.TokenAuth
 
-	r.Post("/register", postRegister)
-	r.Post("/login", postLogIn)
-	r.Post("/logout", postLogOut)
-
-	// r.Get("/ws/chats/{id}", getChatWs)
+	r.Get("/chats/{id}", getChatWs)
 }

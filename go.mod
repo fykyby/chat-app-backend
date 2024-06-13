@@ -4,6 +4,7 @@ go 1.22.3
 
 require (
 	github.com/go-chi/chi/v5 v5.0.12
+	github.com/gorilla/websocket v1.5.2
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/crypto v0.21.0
@@ -19,6 +20,7 @@ require (
 	github.com/lestrrat-go/jwx/v2 v2.0.20 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 )
 

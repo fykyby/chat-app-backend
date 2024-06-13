@@ -7,6 +7,7 @@ import (
 
 	"github.com/fykyby/chat-app-backend/database"
 	"github.com/fykyby/chat-app-backend/handler"
+	"github.com/fykyby/chat-app-backend/ws"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -40,9 +41,9 @@ func main() {
 	r.Use(middleware.StripSlashes)
 	r.Use(jwtauth.Verifier(tokenAuth))
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://*", "https://*"},
+		AllowedOrigins:   []string{os.Getenv("CLIENT_URL")},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Content-Length", "Accept-Encoding", "Set-Cookie"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Content-Length", "Accept-Encoding", "Set-Cookie", "Origin"},
 		AllowCredentials: true,
 	}))
 
@@ -51,6 +52,12 @@ func main() {
 		TokenAuth: tokenAuth,
 	}
 	r.Route("/api", apiHandler.Handler)
+
+	wsHandler := ws.WebSocketHandler{
+		DB:        db,
+		TokenAuth: tokenAuth,
+	}
+	r.Route("/ws", wsHandler.Handler)
 
 	http.ListenAndServe(":3001", r)
 }
