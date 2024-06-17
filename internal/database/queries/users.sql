@@ -34,10 +34,10 @@ SELECT
 FROM 
   users 
 WHERE 
-  name 
-ILIKE 
-  $1
+  name ILIKE $1
+AND 
+  id != $2
 LIMIT 
-  $2
+  $3
 OFFSET 
-  $3;
+  $4;

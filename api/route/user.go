@@ -27,8 +27,6 @@ func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println(claimedUser)
-
 	query := r.URL.Query().Get("q")
 	page_, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
@@ -38,6 +36,7 @@ func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 
 	users_, err := h.DB.SearchPublicUsers(r.Context(), database.SearchPublicUsersParams{
 		Name:   "%" + query + "%",
+		ID:     claimedUser.ID,
 		Limit:  userSearchPageSize + 1,
 		Offset: (page - 1) * userSearchPageSize,
 	})

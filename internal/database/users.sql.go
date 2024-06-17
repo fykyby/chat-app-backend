@@ -107,17 +107,18 @@ SELECT
 FROM 
   users 
 WHERE 
-  name 
-ILIKE 
-  $1
+  name ILIKE $1
+AND 
+  id != $2
 LIMIT 
-  $2
-OFFSET 
   $3
+OFFSET 
+  $4
 `
 
 type SearchPublicUsersParams struct {
 	Name   string
+	ID     int32
 	Limit  int32
 	Offset int32
 }
@@ -129,7 +130,12 @@ type SearchPublicUsersRow struct {
 }
 
 func (q *Queries) SearchPublicUsers(ctx context.Context, arg SearchPublicUsersParams) ([]SearchPublicUsersRow, error) {
-	rows, err := q.db.Query(ctx, searchPublicUsers, arg.Name, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, searchPublicUsers,
+		arg.Name,
+		arg.ID,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
