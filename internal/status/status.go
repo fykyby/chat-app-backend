@@ -1,6 +1,7 @@
 package status
 
 const MESSAGE_ERROR_GENERIC = "An unknown error has occurred"
+const MESSAGE_SUCCESS_GENERIC = "Action has been performed successfully"
 
 const MESSAGE_REGISTER_PASSWORDS_DONT_MATCH = "Passwords do not match"
 const MESSAGE_REGISTER_USER_ALREADY_EXISTS = "User already exists"

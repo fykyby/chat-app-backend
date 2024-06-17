@@ -6,7 +6,10 @@ INSERT INTO chats (
   $1, 
   $2
 )
-RETURNING id, name, is_group;
+RETURNING 
+  id, 
+  name, 
+  is_group;
 
 -- name: CreateUsersChat :one
 INSERT INTO users_chats (
@@ -16,10 +19,23 @@ INSERT INTO users_chats (
   $1,
   $2
 )
-RETURNING user_id, chat_id;
+RETURNING 
+  user_id, 
+  chat_id;
 
 -- name: GetUsersChat :one
-SELECT user_id, chat_id FROM users_chats WHERE user_id = $1 AND chat_id = $2;
+SELECT 
+  user_id, 
+  chat_id 
+FROM 
+  users_chats 
+WHERE 
+  user_id = $1 
+AND 
+  chat_id = $2;
 
 -- name: DeleteChat :exec
-DELETE FROM chats WHERE id = $1;
+DELETE FROM 
+  chats 
+WHERE 
+  id = $1;

@@ -20,7 +20,11 @@ INSERT INTO users (
 ) VALUES (
   $1, $2, $3, $4
 )
-RETURNING id, name, email, avatar
+RETURNING 
+  id, 
+  name, 
+  email, 
+  avatar
 `
 
 type CreateUserParams struct {
@@ -55,7 +59,14 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 }
 
 const getPublicUser = `-- name: GetPublicUser :one
-SELECT id, name, avatar FROM users WHERE id = $1
+SELECT 
+  id, 
+  name, 
+  avatar 
+FROM 
+  users 
+WHERE 
+  id = $1
 `
 
 type GetPublicUserRow struct {
@@ -86,4 +97,53 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Avatar,
 	)
 	return i, err
+}
+
+const searchPublicUsers = `-- name: SearchPublicUsers :many
+SELECT 
+  id, 
+  name, 
+  avatar 
+FROM 
+  users 
+WHERE 
+  name 
+ILIKE 
+  $1
+LIMIT 
+  $2
+OFFSET 
+  $3
+`
+
+type SearchPublicUsersParams struct {
+	Name   string
+	Limit  int32
+	Offset int32
+}
+
+type SearchPublicUsersRow struct {
+	ID     int32
+	Name   string
+	Avatar pgtype.Text
+}
+
+func (q *Queries) SearchPublicUsers(ctx context.Context, arg SearchPublicUsersParams) ([]SearchPublicUsersRow, error) {
+	rows, err := q.db.Query(ctx, searchPublicUsers, arg.Name, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SearchPublicUsersRow
+	for rows.Next() {
+		var i SearchPublicUsersRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Avatar); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

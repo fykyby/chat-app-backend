@@ -4,9 +4,14 @@ INSERT INTO messages (
   user_id,
   content
 ) VALUES (
-  $1, $2, $3
+  $1, 
+  $2, 
+  $3
 )
-RETURNING id, content, created_at;
+RETURNING 
+  id, 
+  content, 
+  created_at;
 
 -- name: GetMessagesPage :many
 SELECT 
@@ -21,4 +26,6 @@ WHERE
 ORDER BY 
   created_at DESC
 LIMIT 
-  $2 OFFSET $3;
+  $2 
+OFFSET 
+  $3;

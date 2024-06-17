@@ -13,16 +13,18 @@ import (
 	"github.com/goccy/go-json"
 )
 
+const chatPageSize = 20
+
 type ChatHandler struct {
 	DB        *database.Queries
 	TokenAuth *jwtauth.JWTAuth
 }
 
-type postChatRequest struct {
+type newChatRequest struct {
 	RecipientID int32 `json:"recipientID"`
 }
 
-func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
+func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context())
 	if err != nil {
 		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
@@ -47,7 +49,7 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 
 	messages, err := h.DB.GetMessagesPage(r.Context(), database.GetMessagesPageParams{
 		ChatID: chatID,
-		Limit:  20,
+		Limit:  chatPageSize,
 		Offset: 0,
 	})
 	if err != nil {
@@ -65,7 +67,7 @@ func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req postChatRequest
+	var req newChatRequest
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		api.SendResponse(w, http.StatusBadRequest, status.MESSAGE_ERROR_GENERIC, nil)

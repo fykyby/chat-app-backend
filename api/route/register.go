@@ -16,7 +16,7 @@ type RegisterHandler struct {
 	DB *database.Queries
 }
 
-type postRegisterRequest struct {
+type registerRequest struct {
 	Email           string `json:"email"`
 	Name            string `json:"name"`
 	Password        string `json:"password"`
@@ -24,7 +24,7 @@ type postRegisterRequest struct {
 }
 
 func (h *RegisterHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var req postRegisterRequest
+	var req registerRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil || req.Email == "" || req.Name == "" || req.Password == "" {
 		log.Println("Error decoding request")

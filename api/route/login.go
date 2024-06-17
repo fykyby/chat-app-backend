@@ -18,13 +18,13 @@ type LogInHandler struct {
 	TokenAuth *jwtauth.JWTAuth
 }
 
-type postLogInRequest struct {
+type logInRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 func (h *LogInHandler) LogIn(w http.ResponseWriter, r *http.Request) {
-	var req postLogInRequest
+	var req logInRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil || req.Email == "" || req.Password == "" {
 		log.Println("Error decoding request: ", err)

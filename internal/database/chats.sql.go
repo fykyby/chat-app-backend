@@ -17,7 +17,10 @@ INSERT INTO chats (
   $1, 
   $2
 )
-RETURNING id, name, is_group
+RETURNING 
+  id, 
+  name, 
+  is_group
 `
 
 type CreateChatParams struct {
@@ -40,7 +43,9 @@ INSERT INTO users_chats (
   $1,
   $2
 )
-RETURNING user_id, chat_id
+RETURNING 
+  user_id, 
+  chat_id
 `
 
 type CreateUsersChatParams struct {
@@ -56,7 +61,10 @@ func (q *Queries) CreateUsersChat(ctx context.Context, arg CreateUsersChatParams
 }
 
 const deleteChat = `-- name: DeleteChat :exec
-DELETE FROM chats WHERE id = $1
+DELETE FROM 
+  chats 
+WHERE 
+  id = $1
 `
 
 func (q *Queries) DeleteChat(ctx context.Context, id int32) error {
@@ -65,7 +73,15 @@ func (q *Queries) DeleteChat(ctx context.Context, id int32) error {
 }
 
 const getUsersChat = `-- name: GetUsersChat :one
-SELECT user_id, chat_id FROM users_chats WHERE user_id = $1 AND chat_id = $2
+SELECT 
+  user_id, 
+  chat_id 
+FROM 
+  users_chats 
+WHERE 
+  user_id = $1 
+AND 
+  chat_id = $2
 `
 
 type GetUsersChatParams struct {
