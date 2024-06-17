@@ -28,12 +28,14 @@ type newChatRequest struct {
 func (h *ChatHandler) GetUsersChats(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context())
 	if err != nil {
+		log.Println(err)
 		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
 
 	chats, err := h.DB.GetUserChatList(r.Context(), claimedUser.ID)
 	if err != nil {
+		log.Println(err)
 		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
@@ -46,12 +48,14 @@ func (h *ChatHandler) GetUsersChats(w http.ResponseWriter, r *http.Request) {
 func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context())
 	if err != nil {
+		log.Println(err)
 		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
 
 	chatID_, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
+		log.Println(err)
 		api.SendResponse(w, http.StatusBadRequest, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
@@ -62,6 +66,7 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 		ChatID: chatID,
 	})
 	if err != nil {
+		log.Println(err)
 		api.SendResponse(w, http.StatusBadRequest, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
@@ -72,6 +77,7 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 		Offset: 0,
 	})
 	if err != nil {
+		log.Println(err)
 		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
@@ -84,6 +90,7 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context())
 	if err != nil {
+		log.Println(err)
 		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
@@ -91,12 +98,14 @@ func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
 	var req newChatRequest
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
+		log.Println(err)
 		api.SendResponse(w, http.StatusBadRequest, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
 
 	recipient, err := h.DB.GetPublicUser(r.Context(), req.RecipientID)
 	if err != nil {
+		log.Println(err)
 		api.SendResponse(w, http.StatusBadRequest, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
@@ -107,6 +116,7 @@ func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
 		Avatar:  recipient.Avatar,
 	})
 	if err != nil {
+		log.Println(err)
 		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
@@ -116,6 +126,7 @@ func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
 		ChatID: chat.ID,
 	})
 	if err != nil {
+		log.Println(err)
 		h.DB.DeleteChat(r.Context(), chat.ID)
 
 		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
