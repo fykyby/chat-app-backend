@@ -1,10 +1,12 @@
 -- name: CreateChat :one
 INSERT INTO chats (
-  name
+  name,
+  is_group
 ) VALUES (
-  $1
+  $1, 
+  $2
 )
-RETURNING id, name;
+RETURNING id, name, is_group;
 
 -- name: CreateUsersChat :one
 INSERT INTO users_chats (

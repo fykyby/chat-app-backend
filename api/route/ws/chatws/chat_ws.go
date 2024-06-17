@@ -1,4 +1,4 @@
-package ws
+package chatws
 
 import (
 	"log"
@@ -6,14 +6,19 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/fykyby/chat-app-backend/auth"
-	"github.com/fykyby/chat-app-backend/handler"
-	"github.com/fykyby/chat-app-backend/model"
+	"github.com/fykyby/chat-app-backend/api"
+	"github.com/fykyby/chat-app-backend/internal/auth"
+	"github.com/fykyby/chat-app-backend/internal/database"
+	"github.com/fykyby/chat-app-backend/internal/model"
 	"github.com/go-chi/chi/v5"
 
-	// "github.com/go-chi/jwtauth/v5"
 	"github.com/gorilla/websocket"
 )
+
+type ChatWsHandler struct {
+	DB    *database.Queries
+	Rooms map[int32]*Room
+}
 
 type incomingMessage struct {
 	UserID  int32  `json:"userID"`
@@ -25,12 +30,10 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-var rooms = make(map[int32]*room)
-
-func getChatWs(w http.ResponseWriter, r *http.Request) {
+func (h *ChatWsHandler) ConnectToChatWs(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context())
 	if err != nil {
-		handler.SendResponse(w, http.StatusUnauthorized, "Unauthorized", nil)
+		api.SendResponse(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 	// TODO: Check if user is in the chat
@@ -52,10 +55,10 @@ func getChatWs(w http.ResponseWriter, r *http.Request) {
 	}
 	roomID := int32(roomID_)
 
-	myRoom, ok := rooms[roomID]
+	myRoom, ok := h.Rooms[roomID]
 	if !ok {
 		myRoom = newRoom(roomID)
-		rooms[roomID] = myRoom
+		h.Rooms[roomID] = myRoom
 		go myRoom.run()
 	}
 

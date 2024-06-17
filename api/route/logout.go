@@ -1,13 +1,16 @@
-package handler
+package route
 
 import (
 	"net/http"
 	"time"
+
+	"github.com/fykyby/chat-app-backend/api"
+	"github.com/fykyby/chat-app-backend/internal/status"
 )
 
-const MESSAGE_LOGOUT_SUCCESS = "Logout successful"
+type LogOutHandler struct{}
 
-func postLogOut(w http.ResponseWriter, r *http.Request) {
+func (h *LogOutHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
 		Value:    "",
@@ -22,5 +25,6 @@ func postLogOut(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: false,
 	})
-	SendResponse(w, http.StatusOK, MESSAGE_LOGOUT_SUCCESS, nil)
+
+	api.SendResponse(w, http.StatusOK, status.MESSAGE_LOGOUT_SUCCESS, nil)
 }

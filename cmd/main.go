@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/fykyby/chat-app-backend/database"
-	"github.com/fykyby/chat-app-backend/handler"
-	"github.com/fykyby/chat-app-backend/ws"
+	// "github.com/fykyby/chat-app-backend/internal/api/ws"
+	"github.com/fykyby/chat-app-backend/api/handler"
+	"github.com/fykyby/chat-app-backend/internal/database"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -53,11 +53,11 @@ func main() {
 	}
 	r.Route("/api", apiHandler.Handler)
 
-	wsHandler := ws.WebSocketHandler{
-		DB:        db,
-		TokenAuth: tokenAuth,
-	}
-	r.Route("/ws", wsHandler.Handler)
+	// wsHandler := ws.WebSocketHandler{
+	// 	DB:        db,
+	// 	TokenAuth: tokenAuth,
+	// }
+	// r.Route("/ws", wsHandler.Handler)
 
 	http.ListenAndServe(":3001", r)
 }

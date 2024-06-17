@@ -1,19 +1,20 @@
-package ws
+package chatws
 
 import (
 	"context"
 	"log"
 
-	"github.com/fykyby/chat-app-backend/database"
-	"github.com/fykyby/chat-app-backend/model"
+	"github.com/fykyby/chat-app-backend/internal/database"
+	"github.com/fykyby/chat-app-backend/internal/model"
 	"github.com/gorilla/websocket"
 )
 
 type client struct {
-	id   int32
-	conn *websocket.Conn
-	room *room
-	send chan model.Message
+	handler *ChatWsHandler
+	id      int32
+	conn    *websocket.Conn
+	room    *Room
+	send    chan model.Message
 }
 
 func (c *client) readPump() {
@@ -32,7 +33,7 @@ func (c *client) readPump() {
 
 		log.Println(msg)
 
-		outgoingMsg, err := db.CreateMessage(context.Background(), database.CreateMessageParams{
+		outgoingMsg, err := c.handler.DB.CreateMessage(context.Background(), database.CreateMessageParams{
 			ChatID:  c.room.id,
 			UserID:  msg.UserID,
 			Content: msg.Content,
@@ -42,7 +43,7 @@ func (c *client) readPump() {
 			break
 		}
 
-		publicUser, err := db.GetPublicUser(context.Background(), msg.UserID)
+		publicUser, err := c.handler.DB.GetPublicUser(context.Background(), msg.UserID)
 		if err != nil {
 			log.Println(err)
 			break

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/fykyby/chat-app-backend/model"
+	"github.com/fykyby/chat-app-backend/internal/model"
 	"github.com/go-chi/jwtauth/v5"
 )
 

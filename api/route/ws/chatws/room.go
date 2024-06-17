@@ -1,12 +1,13 @@
-package ws
+package chatws
 
 import (
 	"log"
 
-	"github.com/fykyby/chat-app-backend/model"
+	"github.com/fykyby/chat-app-backend/internal/model"
 )
 
-type room struct {
+type Room struct {
+	handler    *ChatWsHandler
 	id         int32
 	clients    map[*client]bool
 	broadcast  chan *model.Message
@@ -14,8 +15,8 @@ type room struct {
 	unregister chan *client
 }
 
-func newRoom(id int32) *room {
-	return &room{
+func newRoom(id int32) *Room {
+	return &Room{
 		id:         id,
 		clients:    make(map[*client]bool),
 		broadcast:  make(chan *model.Message),
@@ -25,7 +26,7 @@ func newRoom(id int32) *room {
 
 }
 
-func (r *room) run() {
+func (r *Room) run() {
 	for {
 		select {
 		case client := <-r.register:
@@ -52,17 +53,17 @@ func (r *room) run() {
 	}
 }
 
-func (r *room) hasClients() bool {
+func (r *Room) hasClients() bool {
 	return len(r.clients) > 0
 }
 
-func (r *room) close() {
+func (r *Room) close() {
 	close(r.broadcast)
 	close(r.register)
 	close(r.unregister)
 
-	_, ok := rooms[r.id]
+	_, ok := r.handler.Rooms[r.id]
 	if ok {
-		delete(rooms, r.id)
+		delete(r.handler.Rooms, r.id)
 	}
 }
