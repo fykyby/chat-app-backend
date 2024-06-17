@@ -38,7 +38,7 @@ func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 
 	users_, err := h.DB.SearchPublicUsers(r.Context(), database.SearchPublicUsersParams{
 		Name:   "%" + query + "%",
-		Limit:  userSearchPageSize,
+		Limit:  userSearchPageSize + 1,
 		Offset: (page - 1) * userSearchPageSize,
 	})
 	if err != nil {
@@ -48,7 +48,10 @@ func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	users := []model.PublicUser{}
-	for _, user := range users_ {
+	for index, user := range users_ {
+		if index >= userSearchPageSize {
+			break
+		}
 		users = append(users, model.PublicUser{
 			ID:     user.ID,
 			Name:   user.Name,
@@ -56,5 +59,8 @@ func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, users)
+	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, map[string]interface{}{
+		"users":   users,
+		"hasMore": len(users) > userSearchPageSize,
+	})
 }
