@@ -1,3 +1,2 @@
 /tmp
-/internal/database/*.go
 .env
