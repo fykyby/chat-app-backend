@@ -1,14 +1,17 @@
 -- name: CreateChat :one
 INSERT INTO chats (
   name,
+  avatar,
   is_group
 ) VALUES (
   $1, 
-  $2
+  $2,
+  $3
 )
 RETURNING 
   id, 
   name, 
+  avatar,
   is_group;
 
 -- name: CreateUsersChat :one
@@ -33,6 +36,18 @@ WHERE
   user_id = $1 
 AND 
   chat_id = $2;
+
+-- name: GetUserChatList :many
+SELECT 
+  c.id, 
+  c.name, 
+  c.avatar
+FROM 
+  chats c
+JOIN 
+  users_chats uc ON c.id = uc.chat_id
+WHERE 
+  uc.user_id = $1;
 
 -- name: DeleteChat :exec
 DELETE FROM 

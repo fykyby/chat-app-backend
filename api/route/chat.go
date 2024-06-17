@@ -1,6 +1,7 @@
 package route
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -22,6 +23,24 @@ type ChatHandler struct {
 
 type newChatRequest struct {
 	RecipientID int32 `json:"recipientID"`
+}
+
+func (h *ChatHandler) GetUsersChats(w http.ResponseWriter, r *http.Request) {
+	claimedUser, err := auth.GetClaimedUser(r.Context())
+	if err != nil {
+		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
+		return
+	}
+
+	chats, err := h.DB.GetUserChatList(r.Context(), claimedUser.ID)
+	if err != nil {
+		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
+		return
+	}
+
+	log.Println(chats)
+
+	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, chats)
 }
 
 func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +76,9 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.SendResponse(w, http.StatusOK, "", messages)
+	// TODO: join user data to messages
+
+	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, messages)
 }
 
 func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
@@ -83,6 +104,7 @@ func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
 	chat, err := h.DB.CreateChat(r.Context(), database.CreateChatParams{
 		Name:    recipient.Name,
 		IsGroup: false,
+		Avatar:  recipient.Avatar,
 	})
 	if err != nil {
 		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
@@ -100,5 +122,5 @@ func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.SendResponse(w, http.StatusCreated, "", chat)
+	api.SendResponse(w, http.StatusCreated, status.MESSAGE_SUCCESS_GENERIC, chat)
 }

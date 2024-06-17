@@ -11,6 +11,7 @@ import (
 type Chat struct {
 	ID      int32
 	Name    string
+	Avatar  pgtype.Text
 	IsGroup bool
 }
 

@@ -7,31 +7,42 @@ package database
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createChat = `-- name: CreateChat :one
 INSERT INTO chats (
   name,
+  avatar,
   is_group
 ) VALUES (
   $1, 
-  $2
+  $2,
+  $3
 )
 RETURNING 
   id, 
   name, 
+  avatar,
   is_group
 `
 
 type CreateChatParams struct {
 	Name    string
+	Avatar  pgtype.Text
 	IsGroup bool
 }
 
 func (q *Queries) CreateChat(ctx context.Context, arg CreateChatParams) (Chat, error) {
-	row := q.db.QueryRow(ctx, createChat, arg.Name, arg.IsGroup)
+	row := q.db.QueryRow(ctx, createChat, arg.Name, arg.Avatar, arg.IsGroup)
 	var i Chat
-	err := row.Scan(&i.ID, &i.Name, &i.IsGroup)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Avatar,
+		&i.IsGroup,
+	)
 	return i, err
 }
 
@@ -70,6 +81,45 @@ WHERE
 func (q *Queries) DeleteChat(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, deleteChat, id)
 	return err
+}
+
+const getUserChatList = `-- name: GetUserChatList :many
+SELECT 
+  c.id, 
+  c.name, 
+  c.avatar
+FROM 
+  chats c
+JOIN 
+  users_chats uc ON c.id = uc.chat_id
+WHERE 
+  uc.user_id = $1
+`
+
+type GetUserChatListRow struct {
+	ID     int32
+	Name   string
+	Avatar pgtype.Text
+}
+
+func (q *Queries) GetUserChatList(ctx context.Context, userID int32) ([]GetUserChatListRow, error) {
+	rows, err := q.db.Query(ctx, getUserChatList, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserChatListRow
+	for rows.Next() {
+		var i GetUserChatListRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Avatar); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUsersChat = `-- name: GetUsersChat :one
