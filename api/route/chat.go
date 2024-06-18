@@ -83,8 +83,6 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: join user data to messages
-
 	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, messages)
 }
 
