@@ -10,25 +10,25 @@ import (
 
 type Chat struct {
 	ID      int32
-	Name    string
+	Name    pgtype.Text
 	Avatar  pgtype.Text
 	IsGroup bool
 }
 
 type Message struct {
 	ID        int32
-	ChatID    int32
-	UserID    int32
 	Content   string
 	CreatedAt pgtype.Timestamp
+	ChatID    int32
+	UserID    int32
 }
 
 type User struct {
 	ID       int32
 	Email    string
 	Name     string
-	Password string
 	Avatar   pgtype.Text
+	Password string
 }
 
 type UsersChat struct {

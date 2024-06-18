@@ -33,8 +33,8 @@ func (h *ApiHandler) Handler(r chi.Router) {
 		DB:        h.DB,
 		TokenAuth: h.TokenAuth,
 	}
-	r.Post("/chats", chatHandler.NewChat)
-	r.Get("/chats", chatHandler.GetUsersChats)
+	r.Post("/chats", chatHandler.CreateChat)
+	r.Get("/chats", chatHandler.GetUserChats)
 	r.Get("/chats/{id}", chatHandler.GetChatMessages)
 
 	userHandler := route.UserHandler{

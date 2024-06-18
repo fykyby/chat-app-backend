@@ -12,18 +12,14 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (
-  email, 
+INSERT INTO
+  users (email, name, password, avatar)
+VALUES
+  ($1, $2, $3, $4)
+RETURNING
+  id,
   name,
-  password,
-  avatar
-) VALUES (
-  $1, $2, $3, $4
-)
-RETURNING 
-  id, 
-  name, 
-  email, 
+  email,
   avatar
 `
 
@@ -59,13 +55,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 }
 
 const getPublicUser = `-- name: GetPublicUser :one
-SELECT 
-  id, 
-  name, 
-  avatar 
-FROM 
-  users 
-WHERE 
+SELECT
+  id,
+  name,
+  avatar
+FROM
+  users
+WHERE
   id = $1
 `
 
@@ -83,7 +79,12 @@ func (q *Queries) GetPublicUser(ctx context.Context, id int32) (GetPublicUserRow
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, name, password, avatar FROM users WHERE email = $1
+SELECT
+  id, email, name, avatar, password
+FROM
+  users
+WHERE
+  email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -93,26 +94,25 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.ID,
 		&i.Email,
 		&i.Name,
-		&i.Password,
 		&i.Avatar,
+		&i.Password,
 	)
 	return i, err
 }
 
 const searchPublicUsers = `-- name: SearchPublicUsers :many
-SELECT 
-  id, 
-  name, 
-  avatar 
-FROM 
-  users 
-WHERE 
+SELECT
+  id,
+  name,
+  avatar
+FROM
+  users
+WHERE
   name ILIKE $1
-AND 
-  id != $2
-LIMIT 
+  AND id != $2
+LIMIT
   $3
-OFFSET 
+OFFSET
   $4
 `
 

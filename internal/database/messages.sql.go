@@ -12,18 +12,13 @@ import (
 )
 
 const createMessage = `-- name: CreateMessage :one
-INSERT INTO messages (
-  chat_id, 
-  user_id,
-  content
-) VALUES (
-  $1, 
-  $2, 
-  $3
-)
-RETURNING 
-  id, 
-  content, 
+INSERT INTO
+  messages (chat_id, user_id, content)
+VALUES
+  ($1, $2, $3)
+RETURNING
+  id,
+  content,
   created_at
 `
 
@@ -46,51 +41,55 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (C
 	return i, err
 }
 
-const getMessagesPage = `-- name: GetMessagesPage :many
-SELECT 
-  chat_id, 
-  user_id, 
-  content, 
-  created_at
-FROM 
-  messages
-WHERE 
+const getMessages = `-- name: GetMessages :many
+SELECT
+  m.id,
+  m.content,
+  m.created_at,
+  u.name,
+  u.avatar
+FROM
+  messages m
+  JOIN users u ON u.id = user_id
+WHERE
   chat_id = $1
-ORDER BY 
+ORDER BY
   created_at DESC
-LIMIT 
-  $2 
-OFFSET 
+LIMIT
+  $2
+OFFSET
   $3
 `
 
-type GetMessagesPageParams struct {
+type GetMessagesParams struct {
 	ChatID int32
 	Limit  int32
 	Offset int32
 }
 
-type GetMessagesPageRow struct {
-	ChatID    int32
-	UserID    int32
+type GetMessagesRow struct {
+	ID        int32
 	Content   string
 	CreatedAt pgtype.Timestamp
+	Name      string
+	Avatar    pgtype.Text
 }
 
-func (q *Queries) GetMessagesPage(ctx context.Context, arg GetMessagesPageParams) ([]GetMessagesPageRow, error) {
-	rows, err := q.db.Query(ctx, getMessagesPage, arg.ChatID, arg.Limit, arg.Offset)
+func (q *Queries) GetMessages(ctx context.Context, arg GetMessagesParams) ([]GetMessagesRow, error) {
+	rows, err := q.db.Query(ctx, getMessages, arg.ChatID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetMessagesPageRow
+	var items []GetMessagesRow
 	for rows.Next() {
-		var i GetMessagesPageRow
+		var i GetMessagesRow
 		if err := rows.Scan(
-			&i.ChatID,
-			&i.UserID,
+			&i.ID,
 			&i.Content,
 			&i.CreatedAt,
+			&i.Name,
+			&i.Avatar,
 		); err != nil {
 			return nil, err
 		}

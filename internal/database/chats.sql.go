@@ -12,24 +12,19 @@ import (
 )
 
 const createChat = `-- name: CreateChat :one
-INSERT INTO chats (
+INSERT INTO
+  chats (name, avatar, is_group)
+VALUES
+  ($1, $2, $3)
+RETURNING
+  id,
   name,
-  avatar,
-  is_group
-) VALUES (
-  $1, 
-  $2,
-  $3
-)
-RETURNING 
-  id, 
-  name, 
   avatar,
   is_group
 `
 
 type CreateChatParams struct {
-	Name    string
+	Name    pgtype.Text
 	Avatar  pgtype.Text
 	IsGroup bool
 }
@@ -46,35 +41,32 @@ func (q *Queries) CreateChat(ctx context.Context, arg CreateChatParams) (Chat, e
 	return i, err
 }
 
-const createUsersChat = `-- name: CreateUsersChat :one
-INSERT INTO users_chats (
+const createUserChat = `-- name: CreateUserChat :one
+INSERT INTO
+  users_chats (user_id, chat_id)
+VALUES
+  ($1, $2)
+RETURNING
   user_id,
-  chat_id
-) VALUES (
-  $1,
-  $2
-)
-RETURNING 
-  user_id, 
   chat_id
 `
 
-type CreateUsersChatParams struct {
+type CreateUserChatParams struct {
 	UserID int32
 	ChatID int32
 }
 
-func (q *Queries) CreateUsersChat(ctx context.Context, arg CreateUsersChatParams) (UsersChat, error) {
-	row := q.db.QueryRow(ctx, createUsersChat, arg.UserID, arg.ChatID)
+func (q *Queries) CreateUserChat(ctx context.Context, arg CreateUserChatParams) (UsersChat, error) {
+	row := q.db.QueryRow(ctx, createUserChat, arg.UserID, arg.ChatID)
 	var i UsersChat
 	err := row.Scan(&i.UserID, &i.ChatID)
 	return i, err
 }
 
 const deleteChat = `-- name: DeleteChat :exec
-DELETE FROM 
-  chats 
-WHERE 
+DELETE FROM
+  chats
+WHERE
   id = $1
 `
 
@@ -83,35 +75,34 @@ func (q *Queries) DeleteChat(ctx context.Context, id int32) error {
 	return err
 }
 
-const getUserChatList = `-- name: GetUserChatList :many
-SELECT 
-  c.id, 
-  c.name, 
-  c.avatar
-FROM 
+const getUserChats = `-- name: GetUserChats :many
+SELECT
+  c.id,
+  c.name,
+  c.avatar,
+  c.is_group
+FROM
   chats c
-JOIN 
-  users_chats uc ON c.id = uc.chat_id
-WHERE 
+  JOIN users_chats uc ON c.id = uc.chat_id
+WHERE
   uc.user_id = $1
 `
 
-type GetUserChatListRow struct {
-	ID     int32
-	Name   string
-	Avatar pgtype.Text
-}
-
-func (q *Queries) GetUserChatList(ctx context.Context, userID int32) ([]GetUserChatListRow, error) {
-	rows, err := q.db.Query(ctx, getUserChatList, userID)
+func (q *Queries) GetUserChats(ctx context.Context, userID int32) ([]Chat, error) {
+	rows, err := q.db.Query(ctx, getUserChats, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUserChatListRow
+	var items []Chat
 	for rows.Next() {
-		var i GetUserChatListRow
-		if err := rows.Scan(&i.ID, &i.Name, &i.Avatar); err != nil {
+		var i Chat
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Avatar,
+			&i.IsGroup,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -123,15 +114,14 @@ func (q *Queries) GetUserChatList(ctx context.Context, userID int32) ([]GetUserC
 }
 
 const getUsersChat = `-- name: GetUsersChat :one
-SELECT 
-  user_id, 
-  chat_id 
-FROM 
-  users_chats 
-WHERE 
-  user_id = $1 
-AND 
-  chat_id = $2
+SELECT
+  user_id,
+  chat_id
+FROM
+  users_chats
+WHERE
+  user_id = $1
+  AND chat_id = $2
 `
 
 type GetUsersChatParams struct {

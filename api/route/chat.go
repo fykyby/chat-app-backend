@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/goccy/go-json"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const chatPageSize = 20
@@ -25,7 +26,7 @@ type newChatRequest struct {
 	RecipientID int32 `json:"recipientID"`
 }
 
-func (h *ChatHandler) GetUsersChats(w http.ResponseWriter, r *http.Request) {
+func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context())
 	if err != nil {
 		log.Println(err)
@@ -33,7 +34,7 @@ func (h *ChatHandler) GetUsersChats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chats, err := h.DB.GetUserChatList(r.Context(), claimedUser.ID)
+	chats, err := h.DB.GetUserChats(r.Context(), claimedUser.ID)
 	if err != nil {
 		log.Println(err)
 		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
@@ -71,7 +72,7 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	messages, err := h.DB.GetMessagesPage(r.Context(), database.GetMessagesPageParams{
+	messages, err := h.DB.GetMessages(r.Context(), database.GetMessagesParams{
 		ChatID: chatID,
 		Limit:  chatPageSize,
 		Offset: 0,
@@ -87,7 +88,7 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, messages)
 }
 
-func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
+func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context())
 	if err != nil {
 		log.Println(err)
@@ -111,9 +112,13 @@ func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	chat, err := h.DB.CreateChat(r.Context(), database.CreateChatParams{
-		Name:    recipient.Name,
 		IsGroup: false,
-		Avatar:  recipient.Avatar,
+		Avatar: pgtype.Text{
+			Valid: false,
+		},
+		Name: pgtype.Text{
+			Valid: false,
+		},
 	})
 	if err != nil {
 		log.Println(err)
@@ -121,8 +126,19 @@ func (h *ChatHandler) NewChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.DB.CreateUsersChat(r.Context(), database.CreateUsersChatParams{
+	_, err = h.DB.CreateUserChat(r.Context(), database.CreateUserChatParams{
 		UserID: claimedUser.ID,
+		ChatID: chat.ID,
+	})
+	if err != nil {
+		log.Println(err)
+		h.DB.DeleteChat(r.Context(), chat.ID)
+
+		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
+		return
+	}
+	_, err = h.DB.CreateUserChat(r.Context(), database.CreateUserChatParams{
+		UserID: recipient.ID,
 		ChatID: chat.ID,
 	})
 	if err != nil {
