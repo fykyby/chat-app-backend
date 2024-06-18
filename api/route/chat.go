@@ -46,23 +46,30 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 	for _, chat := range chats_ {
 		newChat := map[string]interface{}{
 			"id":      chat.ID,
-			"name":    chat.Name,
-			"avatar":  chat.Avatar,
+			"name":    chat.Name.String,
+			"avatar":  chat.Avatar.String,
 			"isGroup": chat.IsGroup,
 		}
 
-		chatUsers, err := h.DB.GetChatUsers(r.Context(), chat.ID)
-		if err != nil {
-			log.Println(err)
-			api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
-			return
+		if !chat.Name.Valid || !chat.Avatar.Valid {
+			chatUsers, err := h.DB.GetChatUsers(r.Context(), chat.ID)
+			if err != nil {
+				log.Println(err)
+				api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
+				return
+			}
+
+			for _, user := range chatUsers {
+				if user.ID != claimedUser.ID {
+					if !chat.Name.Valid {
+						newChat["name"] = user.Name
+					}
+					if !chat.Avatar.Valid {
+						newChat["avatar"] = user.Avatar
+					}
+				}
+			}
 		}
-
-		log.Println(chatUsers)
-
-		// if !chat.Name.Valid {
-		// 	newChat["name"]
-		// }
 
 		chats = append(chats, newChat)
 	}
@@ -133,7 +140,26 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat, err := h.DB.CreateChat(r.Context(), database.CreateChatParams{
+	existingChat, err := h.DB.GetChatOfTwoUsers(r.Context(), database.GetChatOfTwoUsersParams{
+		UserID:   claimedUser.ID,
+		UserID_2: recipient.ID,
+	})
+	if err == nil {
+		log.Println("Chat already exists")
+
+		chat := map[string]interface{}{
+			"id":      existingChat.ID,
+			"name":    existingChat.Name,
+			"avatar":  existingChat.Avatar,
+			"isGroup": existingChat.IsGroup,
+		}
+
+		api.SendResponse(w, http.StatusOK, status.MESSAGE_CHAT_ALREADY_EXISTS, chat)
+		return
+	}
+	log.Println("Creating chat")
+
+	chat_, err := h.DB.CreateChat(r.Context(), database.CreateChatParams{
 		IsGroup: false,
 		Avatar: pgtype.Text{
 			Valid: false,
@@ -150,25 +176,33 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 
 	_, err = h.DB.CreateUserChat(r.Context(), database.CreateUserChatParams{
 		UserID: claimedUser.ID,
-		ChatID: chat.ID,
+		ChatID: chat_.ID,
 	})
 	if err != nil {
 		log.Println(err)
-		h.DB.DeleteChat(r.Context(), chat.ID)
+		h.DB.DeleteChat(r.Context(), chat_.ID)
 
 		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
+
 	_, err = h.DB.CreateUserChat(r.Context(), database.CreateUserChatParams{
 		UserID: recipient.ID,
-		ChatID: chat.ID,
+		ChatID: chat_.ID,
 	})
 	if err != nil {
 		log.Println(err)
-		h.DB.DeleteChat(r.Context(), chat.ID)
+		h.DB.DeleteChat(r.Context(), chat_.ID)
 
 		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
 		return
+	}
+
+	chat := map[string]interface{}{
+		"id":      chat_.ID,
+		"name":    chat_.Name,
+		"avatar":  chat_.Avatar,
+		"isGroup": chat_.IsGroup,
 	}
 
 	api.SendResponse(w, http.StatusCreated, status.MESSAGE_SUCCESS_GENERIC, chat)

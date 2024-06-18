@@ -53,6 +53,38 @@ func (q *Queries) DeleteChat(ctx context.Context, id int32) error {
 	return err
 }
 
+const getChatOfTwoUsers = `-- name: GetChatOfTwoUsers :one
+SELECT
+  c.id,
+  c.name,
+  c.avatar,
+  c.is_group
+FROM
+  users_chats uc1
+  JOIN users_chats uc2 ON uc1.chat_id = uc2.chat_id
+  JOIN chats c ON uc1.chat_id = c.id
+WHERE
+  uc1.user_id = $1
+  AND uc2.user_id = $2
+`
+
+type GetChatOfTwoUsersParams struct {
+	UserID   int32
+	UserID_2 int32
+}
+
+func (q *Queries) GetChatOfTwoUsers(ctx context.Context, arg GetChatOfTwoUsersParams) (Chat, error) {
+	row := q.db.QueryRow(ctx, getChatOfTwoUsers, arg.UserID, arg.UserID_2)
+	var i Chat
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Avatar,
+		&i.IsGroup,
+	)
+	return i, err
+}
+
 const getUserChats = `-- name: GetUserChats :many
 SELECT
   c.id,

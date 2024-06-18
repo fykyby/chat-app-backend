@@ -28,3 +28,18 @@ DELETE FROM
   chats
 WHERE
   id = $1;
+
+
+-- name: GetChatOfTwoUsers :one
+SELECT
+  c.id,
+  c.name,
+  c.avatar,
+  c.is_group
+FROM
+  users_chats uc1
+  JOIN users_chats uc2 ON uc1.chat_id = uc2.chat_id
+  JOIN chats c ON uc1.chat_id = c.id
+WHERE
+  uc1.user_id = $1
+  AND uc2.user_id = $2;
