@@ -41,28 +41,6 @@ func (q *Queries) CreateChat(ctx context.Context, arg CreateChatParams) (Chat, e
 	return i, err
 }
 
-const createUserChat = `-- name: CreateUserChat :one
-INSERT INTO
-  users_chats (user_id, chat_id)
-VALUES
-  ($1, $2)
-RETURNING
-  user_id,
-  chat_id
-`
-
-type CreateUserChatParams struct {
-	UserID int32
-	ChatID int32
-}
-
-func (q *Queries) CreateUserChat(ctx context.Context, arg CreateUserChatParams) (UsersChat, error) {
-	row := q.db.QueryRow(ctx, createUserChat, arg.UserID, arg.ChatID)
-	var i UsersChat
-	err := row.Scan(&i.UserID, &i.ChatID)
-	return i, err
-}
-
 const deleteChat = `-- name: DeleteChat :exec
 DELETE FROM
   chats
@@ -111,27 +89,4 @@ func (q *Queries) GetUserChats(ctx context.Context, userID int32) ([]Chat, error
 		return nil, err
 	}
 	return items, nil
-}
-
-const getUsersChat = `-- name: GetUsersChat :one
-SELECT
-  user_id,
-  chat_id
-FROM
-  users_chats
-WHERE
-  user_id = $1
-  AND chat_id = $2
-`
-
-type GetUsersChatParams struct {
-	UserID int32
-	ChatID int32
-}
-
-func (q *Queries) GetUsersChat(ctx context.Context, arg GetUsersChatParams) (UsersChat, error) {
-	row := q.db.QueryRow(ctx, getUsersChat, arg.UserID, arg.ChatID)
-	var i UsersChat
-	err := row.Scan(&i.UserID, &i.ChatID)
-	return i, err
 }

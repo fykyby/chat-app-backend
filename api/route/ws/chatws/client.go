@@ -56,7 +56,7 @@ func (c *client) readPump() {
 			User: model.PublicUser{
 				ID:     publicUser.ID,
 				Name:   publicUser.Name,
-				Avatar: publicUser.Avatar.String,
+				Avatar: publicUser.Avatar,
 			},
 		}
 

@@ -72,7 +72,7 @@ type GetMessagesRow struct {
 	Content   string
 	CreatedAt pgtype.Timestamp
 	Name      string
-	Avatar    pgtype.Text
+	Avatar    string
 }
 
 func (q *Queries) GetMessages(ctx context.Context, arg GetMessagesParams) ([]GetMessagesRow, error) {

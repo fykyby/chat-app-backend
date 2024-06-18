@@ -3,7 +3,7 @@ CREATE TABLE
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL UNIQUE,
-    avatar VARCHAR(255),
+    avatar VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL
   );
 

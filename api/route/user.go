@@ -54,7 +54,7 @@ func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 		users = append(users, model.PublicUser{
 			ID:     user.ID,
 			Name:   user.Name,
-			Avatar: user.Avatar.String,
+			Avatar: user.Avatar,
 		})
 	}
 

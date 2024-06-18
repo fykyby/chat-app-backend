@@ -44,3 +44,15 @@ LIMIT
   $3
 OFFSET
   $4;
+
+
+-- name: GetChatUsers :many
+SELECT
+  u.id,
+  u.name,
+  u.avatar
+FROM
+  users u
+  JOIN users_chats uc ON u.id = uc.user_id
+WHERE
+  uc.chat_id = $1;

@@ -34,14 +34,38 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chats, err := h.DB.GetUserChats(r.Context(), claimedUser.ID)
+	chats_, err := h.DB.GetUserChats(r.Context(), claimedUser.ID)
 	if err != nil {
 		log.Println(err)
 		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
 		return
 	}
 
-	log.Println(chats)
+	chats := []map[string]interface{}{}
+
+	for _, chat := range chats_ {
+		newChat := map[string]interface{}{
+			"id":      chat.ID,
+			"name":    chat.Name,
+			"avatar":  chat.Avatar,
+			"isGroup": chat.IsGroup,
+		}
+
+		chatUsers, err := h.DB.GetChatUsers(r.Context(), chat.ID)
+		if err != nil {
+			log.Println(err)
+			api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
+			return
+		}
+
+		log.Println(chatUsers)
+
+		// if !chat.Name.Valid {
+		// 	newChat["name"]
+		// }
+
+		chats = append(chats, newChat)
+	}
 
 	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, chats)
 }

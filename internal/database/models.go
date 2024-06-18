@@ -27,7 +27,7 @@ type User struct {
 	ID       int32
 	Email    string
 	Name     string
-	Avatar   pgtype.Text
+	Avatar   string
 	Password string
 }
 

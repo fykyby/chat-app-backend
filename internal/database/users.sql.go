@@ -7,8 +7,6 @@ package database
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -27,14 +25,14 @@ type CreateUserParams struct {
 	Email    string
 	Name     string
 	Password string
-	Avatar   pgtype.Text
+	Avatar   string
 }
 
 type CreateUserRow struct {
 	ID     int32
 	Name   string
 	Email  string
-	Avatar pgtype.Text
+	Avatar string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
@@ -54,6 +52,44 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	return i, err
 }
 
+const getChatUsers = `-- name: GetChatUsers :many
+SELECT
+  u.id,
+  u.name,
+  u.avatar
+FROM
+  users u
+  JOIN users_chats uc ON u.id = uc.user_id
+WHERE
+  uc.chat_id = $1
+`
+
+type GetChatUsersRow struct {
+	ID     int32
+	Name   string
+	Avatar string
+}
+
+func (q *Queries) GetChatUsers(ctx context.Context, chatID int32) ([]GetChatUsersRow, error) {
+	rows, err := q.db.Query(ctx, getChatUsers, chatID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetChatUsersRow
+	for rows.Next() {
+		var i GetChatUsersRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Avatar); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPublicUser = `-- name: GetPublicUser :one
 SELECT
   id,
@@ -68,7 +104,7 @@ WHERE
 type GetPublicUserRow struct {
 	ID     int32
 	Name   string
-	Avatar pgtype.Text
+	Avatar string
 }
 
 func (q *Queries) GetPublicUser(ctx context.Context, id int32) (GetPublicUserRow, error) {
@@ -126,7 +162,7 @@ type SearchPublicUsersParams struct {
 type SearchPublicUsersRow struct {
 	ID     int32
 	Name   string
-	Avatar pgtype.Text
+	Avatar string
 }
 
 func (q *Queries) SearchPublicUsers(ctx context.Context, arg SearchPublicUsersParams) ([]SearchPublicUsersRow, error) {

@@ -34,5 +34,7 @@ func GetClaimedUser(ctx context.Context) (model.ClaimedUser, error) {
 		return claimedUser, errors.New("Email not found in claims")
 	}
 
+	// TODO?: Check if user with combined data above exists in database
+
 	return claimedUser, nil
 }

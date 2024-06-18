@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
 
 	"github.com/fykyby/chat-app-backend/api"
 	"github.com/fykyby/chat-app-backend/internal/auth"
 	"github.com/fykyby/chat-app-backend/internal/database"
 	"github.com/fykyby/chat-app-backend/internal/status"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type RegisterHandler struct {
@@ -49,7 +50,7 @@ func (h *RegisterHandler) Register(w http.ResponseWriter, r *http.Request) {
 		Email:    req.Email,
 		Name:     req.Name,
 		Password: passwordHash,
-		Avatar:   pgtype.Text{},
+		Avatar:   os.Getenv("AVATAR_API_URL") + url.QueryEscape(req.Name),
 	})
 	if err != nil {
 		log.Println(err)
