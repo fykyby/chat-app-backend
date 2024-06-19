@@ -50,13 +50,7 @@ func main() {
 		DB:        db,
 		TokenAuth: tokenAuth,
 	}
-	r.Route("/api", apiHandler.Handler)
-
-	// wsHandler := ws.WebSocketHandler{
-	// 	DB:        db,
-	// 	TokenAuth: tokenAuth,
-	// }
-	// r.Route("/ws", wsHandler.Handler)
+	r.Route("/", apiHandler.Handler)
 
 	http.ListenAndServe(":3001", r)
 }
