@@ -63,10 +63,11 @@ func (h *ChatWsHandler) ConnectToChatWs(w http.ResponseWriter, r *http.Request) 
 	}
 
 	client := &client{
-		id:   claimedUser.ID,
-		conn: conn,
-		room: myRoom,
-		send: make(chan model.Message),
+		handler: h,
+		id:      claimedUser.ID,
+		conn:    conn,
+		room:    myRoom,
+		send:    make(chan model.Message),
 	}
 
 	log.Println("CONN", h.Rooms)

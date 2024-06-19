@@ -31,8 +31,6 @@ func (c *client) readPump() {
 			break
 		}
 
-		log.Println(msg)
-
 		outgoingMsg, err := c.handler.DB.CreateMessage(context.Background(), database.CreateMessageParams{
 			ChatID:  c.room.id,
 			UserID:  msg.UserID,
