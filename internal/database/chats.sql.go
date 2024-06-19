@@ -53,6 +53,30 @@ func (q *Queries) DeleteChat(ctx context.Context, id int32) error {
 	return err
 }
 
+const getChat = `-- name: GetChat :one
+SELECT
+  id,
+  name,
+  avatar,
+  is_group
+FROM
+  chats
+WHERE
+  id = $1
+`
+
+func (q *Queries) GetChat(ctx context.Context, id int32) (Chat, error) {
+	row := q.db.QueryRow(ctx, getChat, id)
+	var i Chat
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Avatar,
+		&i.IsGroup,
+	)
+	return i, err
+}
+
 const getChatOfTwoUsers = `-- name: GetChatOfTwoUsers :one
 SELECT
   c.id,

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/fykyby/chat-app-backend/api/route"
-	"github.com/fykyby/chat-app-backend/api/route/ws/chatws"
 	"github.com/fykyby/chat-app-backend/internal/database"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
@@ -35,7 +34,7 @@ func (h *ApiHandler) Handler(r chi.Router) {
 	}
 	r.Post("/chats", chatHandler.CreateChat)
 	r.Get("/chats", chatHandler.GetUserChats)
-	r.Get("/chats/{id}", chatHandler.GetChatMessages)
+	r.Get("/chats/{id}", chatHandler.GetChat)
 
 	userHandler := route.UserHandler{
 		DB: h.DB,
@@ -43,9 +42,9 @@ func (h *ApiHandler) Handler(r chi.Router) {
 	r.Get("/users", userHandler.SearchUsers)
 
 	// ws
-	chatWsHandler := chatws.ChatWsHandler{
-		DB:    h.DB,
-		Rooms: make(map[int32]*chatws.Room),
-	}
-	r.Get("/chats/{id}", chatWsHandler.ConnectToChatWs)
+	// chatWsHandler := chatws.ChatWsHandler{
+	// 	DB:    h.DB,
+	// 	Rooms: make(map[int32]*chatws.Room),
+	// }
+	// r.Get("/chats/{id}", chatWsHandler.ConnectToChatWs)
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/fykyby/chat-app-backend/api"
 	"github.com/fykyby/chat-app-backend/internal/auth"
 	"github.com/fykyby/chat-app-backend/internal/database"
+	"github.com/fykyby/chat-app-backend/internal/model"
 	"github.com/fykyby/chat-app-backend/internal/status"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
@@ -77,7 +78,7 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, chats)
 }
 
-func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
+func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context())
 	if err != nil {
 		log.Println(err)
@@ -103,7 +104,14 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	messages, err := h.DB.GetMessages(r.Context(), database.GetMessagesParams{
+	chat_, err := h.DB.GetChat(r.Context(), chatID)
+	if err != nil {
+		log.Println(err)
+		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
+		return
+	}
+
+	messages_, err := h.DB.GetMessages(r.Context(), database.GetMessagesParams{
 		ChatID: chatID,
 		Limit:  chatPageSize,
 		Offset: 0,
@@ -114,7 +122,31 @@ func (h *ChatHandler) GetChatMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, messages)
+	chat := model.Chat{
+		ID:      chat_.ID,
+		Name:    chat_.Name.String,
+		Avatar:  chat_.Avatar.String,
+		IsGroup: chat_.IsGroup,
+	}
+
+	messages := []model.Message{}
+	for _, message := range messages_ {
+		newMessage := model.Message{
+			ID:        message.ID,
+			UserName:  message.Name,
+			Content:   message.Content,
+			CreatedAt: message.CreatedAt.Time.String(),
+		}
+
+		messages = append(messages, newMessage)
+	}
+
+	response := map[string]interface{}{
+		"chat":     chat,
+		"messages": messages,
+	}
+
+	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, response)
 }
 
 func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
@@ -147,11 +179,11 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		log.Println("Chat already exists")
 
-		chat := map[string]interface{}{
-			"id":      existingChat.ID,
-			"name":    existingChat.Name,
-			"avatar":  existingChat.Avatar,
-			"isGroup": existingChat.IsGroup,
+		chat := model.Chat{
+			ID:      existingChat.ID,
+			Name:    existingChat.Name.String,
+			Avatar:  existingChat.Avatar.String,
+			IsGroup: existingChat.IsGroup,
 		}
 
 		api.SendResponse(w, http.StatusOK, status.MESSAGE_CHAT_ALREADY_EXISTS, chat)
@@ -198,11 +230,11 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chat := map[string]interface{}{
-		"id":      chat_.ID,
-		"name":    chat_.Name,
-		"avatar":  chat_.Avatar,
-		"isGroup": chat_.IsGroup,
+	chat := model.Chat{
+		ID:      existingChat.ID,
+		Name:    existingChat.Name.String,
+		Avatar:  existingChat.Avatar.String,
+		IsGroup: existingChat.IsGroup,
 	}
 
 	api.SendResponse(w, http.StatusCreated, status.MESSAGE_SUCCESS_GENERIC, chat)

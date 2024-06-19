@@ -10,6 +10,18 @@ RETURNING
   is_group;
 
 
+-- name: GetChat :one
+SELECT
+  id,
+  name,
+  avatar,
+  is_group
+FROM
+  chats
+WHERE
+  id = $1;
+
+
 -- name: GetUserChats :many
 SELECT
   c.id,

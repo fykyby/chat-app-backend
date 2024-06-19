@@ -12,7 +12,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/jwtauth/v5"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
@@ -23,13 +23,12 @@ func main() {
 		panic("Error loading .env file")
 	}
 
-	// Database connection
 	ctx := context.Background()
-	dbConnection, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
+	dbConnection, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}
-	defer dbConnection.Close(ctx)
+	defer dbConnection.Close()
 	db := database.New(dbConnection)
 
 	// JWT
