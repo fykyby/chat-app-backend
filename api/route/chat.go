@@ -153,9 +153,13 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 	for _, message := range messages_ {
 		newMessage := model.Message{
 			ID:        message.ID,
-			UserName:  message.Name,
 			Content:   message.Content,
 			CreatedAt: message.CreatedAt.Time.String(),
+			User: model.PublicUser{
+				ID:     message.UserID,
+				Name:   message.UserName,
+				Avatar: message.UserAvatar,
+			},
 		}
 
 		messages = append(messages, newMessage)

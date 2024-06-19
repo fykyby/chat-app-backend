@@ -46,8 +46,9 @@ SELECT
   m.id,
   m.content,
   m.created_at,
-  u.name,
-  u.avatar
+  u.id AS user_id,
+  u.name AS user_name,
+  u.avatar AS user_avatar
 FROM
   messages m
   JOIN users u ON u.id = user_id
@@ -68,11 +69,12 @@ type GetMessagesParams struct {
 }
 
 type GetMessagesRow struct {
-	ID        int32
-	Content   string
-	CreatedAt pgtype.Timestamp
-	Name      string
-	Avatar    string
+	ID         int32
+	Content    string
+	CreatedAt  pgtype.Timestamp
+	UserID     int32
+	UserName   string
+	UserAvatar string
 }
 
 func (q *Queries) GetMessages(ctx context.Context, arg GetMessagesParams) ([]GetMessagesRow, error) {
@@ -88,8 +90,9 @@ func (q *Queries) GetMessages(ctx context.Context, arg GetMessagesParams) ([]Get
 			&i.ID,
 			&i.Content,
 			&i.CreatedAt,
-			&i.Name,
-			&i.Avatar,
+			&i.UserID,
+			&i.UserName,
+			&i.UserAvatar,
 		); err != nil {
 			return nil, err
 		}

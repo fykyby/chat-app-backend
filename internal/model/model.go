@@ -13,10 +13,10 @@ type PublicUser struct {
 }
 
 type Message struct {
-	ID        int32  `json:"id"`
-	UserName  string `json:"userName"`
-	Content   string `json:"content"`
-	CreatedAt string `json:"createdAt"`
+	ID        int32      `json:"id"`
+	Content   string     `json:"content"`
+	CreatedAt string     `json:"createdAt"`
+	User      PublicUser `json:"user"`
 }
 
 type Chat struct {

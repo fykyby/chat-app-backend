@@ -14,8 +14,9 @@ SELECT
   m.id,
   m.content,
   m.created_at,
-  u.name,
-  u.avatar
+  u.id AS user_id,
+  u.name AS user_name,
+  u.avatar AS user_avatar
 FROM
   messages m
   JOIN users u ON u.id = user_id
