@@ -13,7 +13,7 @@ import (
 	"github.com/go-chi/jwtauth/v5"
 )
 
-const userSearchPageSize = 20
+const USER_SEARCH_PAGE_SIZE = 20
 
 type UserHandler struct {
 	DB        *database.Queries
@@ -37,8 +37,8 @@ func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	users_, err := h.DB.SearchPublicUsers(r.Context(), database.SearchPublicUsersParams{
 		Name:   "%" + query + "%",
 		ID:     claimedUser.ID,
-		Limit:  userSearchPageSize + 1,
-		Offset: (page - 1) * userSearchPageSize,
+		Limit:  USER_SEARCH_PAGE_SIZE + 1,
+		Offset: (page - 1) * USER_SEARCH_PAGE_SIZE,
 	})
 	if err != nil {
 		log.Println(err)
@@ -48,7 +48,7 @@ func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 
 	users := []model.PublicUser{}
 	for index, user := range users_ {
-		if index >= userSearchPageSize {
+		if index >= USER_SEARCH_PAGE_SIZE {
 			break
 		}
 		users = append(users, model.PublicUser{
@@ -60,6 +60,6 @@ func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 
 	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, map[string]interface{}{
 		"users":   users,
-		"hasMore": len(users) > userSearchPageSize,
+		"hasMore": len(users_) > USER_SEARCH_PAGE_SIZE,
 	})
 }

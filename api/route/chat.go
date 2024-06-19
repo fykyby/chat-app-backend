@@ -16,7 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const chatPageSize = 20
+const CHAT_PAGE_SIZE = 20
 
 type ChatHandler struct {
 	DB        *database.Queries
@@ -94,6 +94,12 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 	}
 	chatID := int32(chatID_)
 
+	page_, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page_ = 1
+	}
+	page := int32(page_)
+
 	_, err = h.DB.GetUsersChat(r.Context(), database.GetUsersChatParams{
 		UserID: claimedUser.ID,
 		ChatID: chatID,
@@ -140,8 +146,8 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 
 	messages_, err := h.DB.GetMessages(r.Context(), database.GetMessagesParams{
 		ChatID: chatID,
-		Limit:  chatPageSize,
-		Offset: 0,
+		Limit:  CHAT_PAGE_SIZE + 1,
+		Offset: (page - 1) * CHAT_PAGE_SIZE,
 	})
 	if err != nil {
 		log.Println(err)
@@ -150,7 +156,11 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	messages := []model.Message{}
-	for _, message := range messages_ {
+	for index, message := range messages_ {
+		if index >= CHAT_PAGE_SIZE {
+			break
+		}
+
 		newMessage := model.Message{
 			ID:        message.ID,
 			Content:   message.Content,
@@ -168,6 +178,7 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"chat":     newChat,
 		"messages": messages,
+		"hasMore":  len(messages_) > CHAT_PAGE_SIZE,
 	}
 
 	api.SendResponse(w, http.StatusOK, status.MESSAGE_SUCCESS_GENERIC, response)
