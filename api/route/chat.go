@@ -42,14 +42,14 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chats := []map[string]interface{}{}
+	chats := []model.Chat{}
 
 	for _, chat := range chats_ {
-		newChat := map[string]interface{}{
-			"id":      chat.ID,
-			"name":    chat.Name.String,
-			"avatar":  chat.Avatar.String,
-			"isGroup": chat.IsGroup,
+		newChat := model.Chat{
+			ID:      chat.ID,
+			Name:    chat.Name.String,
+			Avatar:  chat.Avatar.String,
+			IsGroup: chat.IsGroup,
 		}
 
 		if !chat.Name.Valid || !chat.Avatar.Valid {
@@ -63,10 +63,10 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 			for _, user := range chatUsers {
 				if user.ID != claimedUser.ID {
 					if !chat.Name.Valid {
-						newChat["name"] = user.Name
+						newChat.Name = user.Name
 					}
 					if !chat.Avatar.Valid {
-						newChat["avatar"] = user.Avatar
+						newChat.Avatar = user.Avatar
 					}
 				}
 			}
@@ -111,6 +111,33 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	newChat := model.Chat{
+		ID:      chat_.ID,
+		Name:    chat_.Name.String,
+		Avatar:  chat_.Avatar.String,
+		IsGroup: chat_.IsGroup,
+	}
+
+	if !chat_.Name.Valid || !chat_.Avatar.Valid {
+		chatUsers, err := h.DB.GetChatUsers(r.Context(), chat_.ID)
+		if err != nil {
+			log.Println(err)
+			api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
+			return
+		}
+
+		for _, user := range chatUsers {
+			if user.ID != claimedUser.ID {
+				if !chat_.Name.Valid {
+					newChat.Name = user.Name
+				}
+				if !chat_.Avatar.Valid {
+					newChat.Avatar = user.Avatar
+				}
+			}
+		}
+	}
+
 	messages_, err := h.DB.GetMessages(r.Context(), database.GetMessagesParams{
 		ChatID: chatID,
 		Limit:  chatPageSize,
@@ -120,13 +147,6 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		api.SendResponse(w, http.StatusInternalServerError, status.MESSAGE_ERROR_GENERIC, nil)
 		return
-	}
-
-	chat := model.Chat{
-		ID:      chat_.ID,
-		Name:    chat_.Name.String,
-		Avatar:  chat_.Avatar.String,
-		IsGroup: chat_.IsGroup,
 	}
 
 	messages := []model.Message{}
@@ -142,7 +162,7 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := map[string]interface{}{
-		"chat":     chat,
+		"chat":     newChat,
 		"messages": messages,
 	}
 
