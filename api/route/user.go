@@ -13,7 +13,7 @@ import (
 	"github.com/go-chi/jwtauth/v5"
 )
 
-const USER_SEARCH_PAGE_SIZE = 20
+const USER_SEARCH_PAGE_SIZE = 10
 
 type UserHandler struct {
 	DB        *database.Queries
