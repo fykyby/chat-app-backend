@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 
+	"github.com/fykyby/chat-app-backend/internal/database"
 	"github.com/fykyby/chat-app-backend/internal/model"
 	"github.com/go-chi/jwtauth/v5"
 )
 
-func GetClaimedUser(ctx context.Context) (model.ClaimedUser, error) {
+func GetClaimedUser(ctx context.Context, db *database.Queries) (model.ClaimedUser, error) {
 	claimedUser := model.ClaimedUser{}
 
 	_, claims, err := jwtauth.FromContext(ctx)
@@ -22,19 +23,26 @@ func GetClaimedUser(ctx context.Context) (model.ClaimedUser, error) {
 		return claimedUser, errors.New("ID not found in claims")
 	}
 
-	if _, ok := claims["name"]; ok {
-		claimedUser.Name = claims["name"].(string)
+	if name, ok := claims["name"]; ok {
+		claimedUser.Name = name.(string)
 	} else {
 		return claimedUser, errors.New("Name not found in claims")
 	}
 
-	if _, ok := claims["email"]; ok {
-		claimedUser.Email = claims["email"].(string)
+	if email, ok := claims["email"]; ok {
+		claimedUser.Email = email.(string)
 	} else {
 		return claimedUser, errors.New("Email not found in claims")
 	}
 
-	// TODO?: Check if user with combined data above exists in database
+	_, err = db.GetUserByData(ctx, database.GetUserByDataParams{
+		ID:    claimedUser.ID,
+		Name:  claimedUser.Name,
+		Email: claimedUser.Email,
+	})
+	if err != nil {
+		return claimedUser, errors.New("Invalid JWT user")
+	}
 
 	return claimedUser, nil
 }

@@ -28,7 +28,7 @@ type newChatRequest struct {
 }
 
 func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
-	claimedUser, err := auth.GetClaimedUser(r.Context())
+	claimedUser, err := auth.GetClaimedUser(r.Context(), h.DB)
 	if err != nil {
 		log.Println(err)
 		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
@@ -79,7 +79,7 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
-	claimedUser, err := auth.GetClaimedUser(r.Context())
+	claimedUser, err := auth.GetClaimedUser(r.Context(), h.DB)
 	if err != nil {
 		log.Println(err)
 		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
@@ -185,7 +185,7 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
-	claimedUser, err := auth.GetClaimedUser(r.Context())
+	claimedUser, err := auth.GetClaimedUser(r.Context(), h.DB)
 	if err != nil {
 		log.Println(err)
 		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)

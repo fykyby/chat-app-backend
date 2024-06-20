@@ -32,7 +32,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func (h *ChatWsHandler) ConnectToChatWs(w http.ResponseWriter, r *http.Request) {
-	claimedUser, err := auth.GetClaimedUser(r.Context())
+	claimedUser, err := auth.GetClaimedUser(r.Context(), h.DB)
 	if err != nil {
 		api.SendResponse(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return

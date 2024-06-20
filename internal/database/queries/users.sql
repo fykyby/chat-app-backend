@@ -19,6 +19,17 @@ WHERE
   email = $1;
 
 
+-- name: GetUserByData :one 
+SELECT
+  *
+FROM
+  users
+WHERE
+  id = $1
+  AND name = $2
+  AND email = $3;
+
+
 -- name: GetPublicUser :one
 SELECT
   id,

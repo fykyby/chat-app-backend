@@ -114,6 +114,36 @@ func (q *Queries) GetPublicUser(ctx context.Context, id int32) (GetPublicUserRow
 	return i, err
 }
 
+const getUserByData = `-- name: GetUserByData :one
+SELECT
+  id, email, name, avatar, password
+FROM
+  users
+WHERE
+  id = $1
+  AND name = $2
+  AND email = $3
+`
+
+type GetUserByDataParams struct {
+	ID    int32
+	Name  string
+	Email string
+}
+
+func (q *Queries) GetUserByData(ctx context.Context, arg GetUserByDataParams) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByData, arg.ID, arg.Name, arg.Email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Name,
+		&i.Avatar,
+		&i.Password,
+	)
+	return i, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT
   id, email, name, avatar, password
