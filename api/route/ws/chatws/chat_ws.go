@@ -10,6 +10,7 @@ import (
 	"github.com/fykyby/chat-app-backend/internal/auth"
 	"github.com/fykyby/chat-app-backend/internal/database"
 	"github.com/fykyby/chat-app-backend/internal/model"
+	"github.com/fykyby/chat-app-backend/internal/status"
 	"github.com/go-chi/chi/v5"
 
 	"github.com/gorilla/websocket"
@@ -36,7 +37,23 @@ func (h *ChatWsHandler) ConnectToChatWs(w http.ResponseWriter, r *http.Request) 
 		api.SendResponse(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
-	// TODO: Check if user is in the chat
+
+	roomID_, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	roomID := int32(roomID_)
+
+	_, err = h.DB.GetUsersChat(r.Context(), database.GetUsersChatParams{
+		UserID: claimedUser.ID,
+		ChatID: roomID,
+	})
+	if err != nil {
+		log.Println(err)
+		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
+		return
+	}
 
 	upgrader.CheckOrigin = func(r *http.Request) bool {
 		return r.Header.Get("Origin") == os.Getenv("CLIENT_URL")
@@ -47,13 +64,6 @@ func (h *ChatWsHandler) ConnectToChatWs(w http.ResponseWriter, r *http.Request) 
 		log.Println(err)
 		return
 	}
-
-	roomID_, err := strconv.Atoi(chi.URLParam(r, "id"))
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	roomID := int32(roomID_)
 
 	myRoom, ok := h.Rooms[roomID]
 	if !ok {
