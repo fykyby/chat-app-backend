@@ -266,10 +266,10 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	chat := model.Chat{
-		ID:      existingChat.ID,
-		Name:    existingChat.Name.String,
-		Avatar:  existingChat.Avatar.String,
-		IsGroup: existingChat.IsGroup,
+		ID:      chat_.ID,
+		Name:    chat_.Name.String,
+		Avatar:  chat_.Avatar.String,
+		IsGroup: chat_.IsGroup,
 	}
 
 	api.SendResponse(w, http.StatusCreated, status.MESSAGE_SUCCESS_GENERIC, chat)
