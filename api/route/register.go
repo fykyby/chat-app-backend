@@ -35,7 +35,7 @@ func (h *RegisterHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	if req.Password != req.PasswordConfirm {
 		log.Println("Passwords do not match")
-		api.SendResponse(w, http.StatusBadRequest, status.MESSAGE_REGISTER_PASSWORDS_DONT_MATCH, nil)
+		api.SendResponse(w, http.StatusBadRequest, status.MESSAGE_ERROR_REGISTER_PASSWORDS_DONT_MATCH, nil)
 		return
 	}
 
@@ -54,7 +54,7 @@ func (h *RegisterHandler) Register(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Println(err)
-		api.SendResponse(w, http.StatusConflict, status.MESSAGE_REGISTER_USER_ALREADY_EXISTS, nil)
+		api.SendResponse(w, http.StatusConflict, status.MESSAGE_ERROR_REGISTER_USER_ALREADY_EXISTS, nil)
 		return
 	}
 

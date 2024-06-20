@@ -23,7 +23,7 @@ type UserHandler struct {
 func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context(), h.DB)
 	if err != nil {
-		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
+		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_UNAUTHORIZED, nil)
 		return
 	}
 

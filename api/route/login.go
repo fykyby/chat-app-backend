@@ -35,14 +35,14 @@ func (h *LogInHandler) LogIn(w http.ResponseWriter, r *http.Request) {
 	user, err := h.DB.GetUserByEmail(r.Context(), req.Email)
 	if err != nil {
 		log.Println(err)
-		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_LOGIN_WRONG_CREDENTIALS, nil)
+		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_LOGIN_WRONG_CREDENTIALS, nil)
 		return
 	}
 
 	passwordsMatch := auth.CheckPasswordHash(req.Password, user.Password)
 	if !passwordsMatch {
 		log.Println("Wrong password")
-		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_LOGIN_WRONG_CREDENTIALS, nil)
+		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_LOGIN_WRONG_CREDENTIALS, nil)
 		return
 	}
 

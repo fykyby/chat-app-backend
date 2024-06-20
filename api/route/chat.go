@@ -31,7 +31,7 @@ func (h *ChatHandler) GetUserChats(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context(), h.DB)
 	if err != nil {
 		log.Println(err)
-		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
+		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_UNAUTHORIZED, nil)
 		return
 	}
 
@@ -82,7 +82,7 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context(), h.DB)
 	if err != nil {
 		log.Println(err)
-		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
+		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_UNAUTHORIZED, nil)
 		return
 	}
 
@@ -106,7 +106,7 @@ func (h *ChatHandler) GetChat(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Println(err)
-		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
+		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_UNAUTHORIZED, nil)
 		return
 	}
 
@@ -188,7 +188,7 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 	claimedUser, err := auth.GetClaimedUser(r.Context(), h.DB)
 	if err != nil {
 		log.Println(err)
-		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_GENERIC, nil)
+		api.SendResponse(w, http.StatusUnauthorized, status.MESSAGE_ERROR_UNAUTHORIZED, nil)
 		return
 	}
 
@@ -221,7 +221,7 @@ func (h *ChatHandler) CreateChat(w http.ResponseWriter, r *http.Request) {
 			IsGroup: existingChat.IsGroup,
 		}
 
-		api.SendResponse(w, http.StatusOK, status.MESSAGE_CHAT_ALREADY_EXISTS, chat)
+		api.SendResponse(w, http.StatusOK, status.MESSAGE_ERROR_CHAT_ALREADY_EXISTS, chat)
 		return
 	}
 	log.Println("Creating chat")
