@@ -1,7 +1,3 @@
-```shell
-sqlc generate
-```
+# Chat App
 
-```shell
-air
-```
+## Work in progress
